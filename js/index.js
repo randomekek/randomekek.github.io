@@ -38,6 +38,7 @@ function init() {
   onWindowResize();
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener("deviceorientation", onRotate);
+  document.onclick = function() { document.body.webkitRequestFullscreen() }
 }
 
 function onWindowResize( event ) {
