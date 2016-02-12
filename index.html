@@ -137,7 +137,7 @@ body, html, #container {
     vec3 vy = normalize(cross(vx, rz)); // up
     vec3 rx = cos(-iDirection.y) * vx + sin(-iDirection.y) * vy;
     vec3 ry = -sin(-iDirection.y) * vx + cos(-iDirection.y) * vy;
-    vec3 origin = iPosition + sign(iResolution.x / 2.0 - fragCoord.x) * 0.1 * rx; // origin is offset by eye
+    vec3 origin = iPosition + sign(fragCoord.x - iResolution.x / 2.0) * 0.1 * rx; // origin is offset by eye
 
     if(length(pixel) < 1.1) {
       vec3 ray = normalize(rx*pixel.x + ry*pixel.y + rz*fieldOfView);
