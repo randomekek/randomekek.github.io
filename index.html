@@ -147,10 +147,12 @@ body, html, #container {
       
       if (fragCoord.x < iResolution.x / 2.0) {
           p = (-halfResolution + 2.0*fragCoord.xy)/ halfResolution.y;
-          ro = 4.0*normalize(vec3(sin(3.0*m.x-0.01), 0.4*m.y, cos(3.0*m.x)));
+          m.x = m.x - 0.01;
+          ro = 4.0*normalize(vec3(sin(3.0*m.x), 0.4*m.y, cos(3.0*m.x)));
       } else {
           p = (-halfResolution + 2.0*fragCoord.xy-2.0*vec2(halfResolution.x, 0))/ halfResolution.y;
-          ro = 4.0*normalize(vec3(sin(3.0*m.x+0.01), 0.4*m.y, cos(3.0*m.x)));
+          m.x = m.x + 0.01;
+          ro = 4.0*normalize(vec3(sin(3.0*m.x), 0.4*m.y, cos(3.0*m.x)));
       }
       if(length(p) < 1.0) {
           vec3 ta = vec3(0.0, -1.0, 0.0);
