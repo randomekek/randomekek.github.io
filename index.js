@@ -69,7 +69,7 @@ function integrate() {
   direction.y = deviceOrientation.y;
   direction.z = deviceOrientation.z;
   position.x += velocity * Math.cos(direction.z) * Math.sin(direction.x);
-  position.y += velocity * Math.sin(direction.z) * 1;
+  position.y += Math.max(velocity * Math.sin(direction.z) * 1, -0.5 * velocity);
   position.z += velocity * Math.cos(direction.z) * Math.cos(direction.x);
   if(debug) {
     rotationDiv.innerText = 'rot: ' + [deviceOrientation.x, deviceOrientation.y, deviceOrientation.z].map(round2).join(', ');
