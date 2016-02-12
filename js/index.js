@@ -50,7 +50,11 @@ function onWindowResize( event ) {
 function onRotate(event) {
   uniforms.iCamera.value.x = event.alpha;
   uniforms.iCamera.value.y = event.beta;
-  uniforms.iCamera.value.z = event.gamma;
+  if(event.gamma < 0) {
+    uniforms.iCamera.value.z = -event.gamma;
+  } else {
+    uniforms.iCamera.value.z = 180-event.gamma;
+  }
 }
 
 function animate() {
