@@ -141,6 +141,7 @@ body, html, #container {
       vec2 halfResolution = iResolution.xy * vec2(0.5, 1.0);
       
       vec2 m = iCamera.xz / 360.0 * 2.0;
+      m.z = -1.0*m.z;
       vec2 p;
       vec3 ro;
       
