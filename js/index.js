@@ -2,6 +2,7 @@ var container;
 var camera, scene, renderer;
 var uniforms;
 var startTime;
+var lastRender = Date.now();
 
 init();
 animate();
@@ -57,7 +58,10 @@ function animate() {
 }
 
 function render() {
-  var currentTime = Date.now();
-  uniforms.iGlobalTime.value = (currentTime - startTime) * 0.001;
-  renderer.render( scene, camera );
+  if(Date.now() > lastRender + 33) {
+    var currentTime = Date.now();
+    lastRender = Date.now();
+    uniforms.iGlobalTime.value = (currentTime - startTime) * 0.001;
+    renderer.render( scene, camera );
+  }
 }
