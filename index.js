@@ -3,9 +3,9 @@ var startTime = Date.now(), lastRender = Date.now();
 var rotationDiv = document.getElementById('rotation');
 var positionDiv = document.getElementById('position');
 var ToRadians = Math.PI / 180;
-var debug = true;
 var addedDirectionX = 0;
 var deviceOrientation = {x: 0, y: 0, z: 0};
+var debug = false;
 
 init();
 
@@ -82,7 +82,7 @@ function onClick() {
 }
 
 function round2(value) {
-  return [value >= 0 ? '+' : '', Math.round(value * 20) / 20, '000000'].join('').substr(0, 5);
+  return [value >= 0 ? '+' : '', Math.round(value * 100) / 100, '000000'].join('').substr(0, 5);
 }
 
 function animate() {
