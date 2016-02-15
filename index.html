@@ -48,7 +48,7 @@ body, html, #container {
   uniform vec3 iPosition;
   uniform sampler2D iChannel0;
 
-  const float fieldOfView = 0.6;
+  const float fieldOfView = 0.3;
 
   // Created by inigo quilez - iq/2013
   // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -115,7 +115,7 @@ body, html, #container {
     float t = 0.0;
     MARCH(20,map5);
     MARCH(30,map4);
-    MARCH(40,map3);
+    MARCH(50,map3);
     return clamp(sum, 0.0, 1.0);
   }
 
