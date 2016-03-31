@@ -1,0 +1,207 @@
+<!doctype html>
+<html>
+<title>Deep Learning for Beginners</title>
+
+<link href="http://strapdownjs.com/v/0.2/themes/simplex.min.css" rel="stylesheet">
+<link href="http://strapdownjs.com/v/0.2/strapdown.css" rel="stylesheet">
+<link href="http://strapdownjs.com/v/0.2/themes/bootstrap-responsive.min.css" rel="stylesheet">
+
+<xmp theme="simplex" style="display:none;">
+# Deep Learning for Beginners
+
+Notes for "Deep Learning" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
+
+## Feedforward Networks
+
+Feedforward networks approximates your function $y = f^\star(x)$ with a function family: $$ u = f(\theta)(x) $$
+
+* $\theta$ are the model parameters. This could be thousands or millions of parameters $\theta_1 \ldots \theta_T$.
+* $f$ is a family of functions. $f(\theta)$ is a single function. $u$ is the output of the model.
+* You can imagine if you chose a sufficiently general family of functions, chances are, one of them will resemble $f^\star$.
+* For example: let the parameters represent a matrix and a vector:
+  $f(\theta)(\vec{x}) = \begin{bmatrix}\theta_0 & \theta_1 \\\\ \theta_2 & \theta_3\end{bmatrix} \vec{x} + \begin{bmatrix}\theta_4 \\\\ \theta_5 \end{bmatrix}$
+
+## Designing the Output Layer.
+
+The most common output layer is: $$f(x) = g(Mx+b)$$
+
+* The linear part $Mx+b$ ensures that your output depends on all inputs.
+* The nonlinear part $g(x)$ allows you to fit the distributon of $y$.
+* For example for input of photos, the output distribution could be:
+  * Linear: $y \in \mathbb{R}$. eg cuteness of the photo
+  * Sigmoid: $y \in [0, 1]$. eg probability its a cat
+  * Softmax: $y \in \mathbb{R}^C$ and $\sum y = 1$. eg. probability its one of $C$ breeds of cats
+* To ensure $g(x)$ fits the distribution, you can use:
+  * Linear: $g(x) = x$.
+  * Sigmoid: $g(x) = \frac{1}{1+e^x}$.
+
+    <img src="sigmoid.svg" style="margin: 0; width: 10em">
+  * Softmax: $g(x)_c = \frac{e^{x_c}}{\sum_i e^{x_i}}$.
+* Softmax is actually under-constrained, and often $x_0$ is set to 1. In this case sigmoid is just softmax in 2 variables.
+* There is theory behind why these $g$'s are good choices, but there are many different choices.
+
+## Finding $\theta$
+
+Find $\theta$ by solving the following optimization problem for $J$ the cost function:
+
+$$ \min_{\theta \in \text{models}} J\big( y, f(\theta)(x) \big) $$
+
+* Deep learning is successful because there is a good family of algorithms to calculate $\min$.
+* That algorithms are all variations of gradient descent:
+```
+theta = initial_random_values()
+loop {
+    xs = fetch_inputs()
+    ys = fetch_outputs()
+    us = model(theta)(xs)
+    cost = J(ys, us)
+    if cost < threshold: exit;
+    theta = theta - gradient(cost)
+}
+```
+* Intuitively, at every theta you chose the direction that reduces the cost the most.
+* This requires you to compute the gradient $\frac{d\text{cost}}{d\theta_t}$.
+* You don't want the gradient to be near $0$ because you learn too slowly or near $\inf$ because it is not stable.
+* This is a greedy algorithm, and thus might converge but into a local minimum.
+
+## Chosing the Cost Function
+
+* This cost function could be anything:
+  * Sum of absolute errors: $J = \sum|y - u|$.
+  * Sum of square errors: $J = \sum(y - u)^2$.
+* One good idea is that $u$ represents the parameters of the distribution of $y$.
+  * It's good because it gives a smooth interpretation of how close we are.
+  * The natural choice for cost is the cross entropy: $J = \sum -\log P(y; u)$.
+* Applying the idea for: $y ~ \text{Gaussian}(\text{center}=u)$:
+  * $P(y; u) = e^{-(y-u)^2}.$
+  * $J = \sum -\log e^{-(y-u)^2} = \sum(y-u)^2$
+  * This motivates sum of squares as a good choice.
+
+## Deep Feedforward Networks
+
+Deep feedforward networks instead use: $$ u = f(\theta)(x) = f^N(\theta^N)(\ldots(f^2(\theta^2)(f^1(\theta^1)(x)))) $$
+
+* This model has $N$ layers.
+  * $f^1 \ldots f^{N-1}$: hidden layers.
+  * $f^N$: output layer.
+* A deep model sounds like a bad idea because it needs more parameters.
+* In practise, it actually needs fewer parameters, and the models perform better (why?).
+* One possible reason is that each layer learns higher and higher level features of the data.
+
+## Designing Hidden Layers.
+
+The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
+
+* The hidden layers have the same structure as the output layer.
+* However the $g(x)$ which work well for the output layer don't work well for the hidden layers.
+* The simplest and most successful $g$ is the rectified linear unit (ReLU): $g(x) = \max(0, x)$.
+  * Compared to sigmoid, the gradients of ReLU does not approach zero when x is very big.
+* Other common non-linear functions include:
+* Modulated ReLU: $g(x) = \max(0, x) + \alpha\min(0, x)$.
+  * Where alpha is -1, very small, or a model parameter itself.
+  * The intuition is that this function has a slope for x &lt; 0.
+  * In practise there is no absolute winner between this and ReLU.
+* Maxout: $g(x)\_i = \max_{j \in G(i)} x_j$
+  * For comparison ReLU is $\mathbb{R}^n \rightarrow \mathbb{R}^n$, and maxout is $\mathbb{R}^n \rightarrow \mathbb{R}^\frac{n}{m}$.
+  * It is the max of each bundle of $m$ inputs, think of it as $m$ piecewise linear sections.
+* Linear: $g(x) = x$
+  * After multiplying with the next layer up, it is equivalent to: $f^n(x) = g'(NMx+b')$
+  * It's useful because you can use use narrow $N$ and $M$, which has less parameters.
+
+## Overfitting.
+
+<img src="overfitting.png" style="margin: 0; width: 20em">
+
+* After optimizing $\theta$ many times, you are in danger of overfitting.
+* The function learns to score better and better on the training data, but it might score worse on unseen data.
+* In other words it is getting more generalization error.
+* The standard way to test for overfitting is to set aside "test data" which it never trains on.
+* The remaining data is "training data", after training, you use the test data to judge how good the model is.
+* For each training stage, you need to set aside test data for that stage.
+  * Hyperparameter tweaking (layer count, node count etc) is also a training stage.
+
+## Regularization
+
+* Regularization is all the methods that attempt to reduce generalization error.
+* Prefer smaller $\theta$ values:
+  * By adding some function of $\theta$ into $J$ we can encourage small parameters.
+  * $L^2$: $J' = J + \sum |\theta|^2$
+  * $L^1$: $J' = J + \sum |\theta|$
+  * $L^0$ is not smooth.
+  * Note for $\theta \rightarrow Mx+b$ usually only $M$ is added.
+* Data augmentation:
+  * Having more examples reduces overfitting.
+  * Also consider generating valid new data from existing data.
+  * Rotation, stretch existing images to make new images.
+  * Injecting small noise into $x$, into layers, into parameters.
+* Multi-Task learning:
+  * Share a layer between several different tasks.
+  * The layer is forced to chose useful features that is relevant to a general set of tasks.
+* Early stopping:
+  * Keep a test data set, called the validation set, that is never trained on
+  * Stop training when the cost on the validation set stops decreasing.
+  * You need an extra test set to truly judge the the final.
+* Parameter sharing:
+  * If you know invariants about your data, encode that into your parameter choice.
+  * For example: images are translationally invariant, so each small patch should have the same parameters.
+* Dropout:
+  * Randomly turn off some neurons in the layer.
+  * Neurons learn to not take input data for granted.
+* Adversarial:
+  * Try to make the points near training points constant, by generating adversarial data near these points.
+
+## Optimizaton Methods
+
+* Minibatch - TODO
+* There are many ways to do gradient descent (using: gradient $g$, learning rate $\epsilon$, gradient update $\Delta$)
+  * Gradient descent - use gradient: $\Delta = \epsilon g$.
+  * Momentum - use exponential decayed gradient: $\Delta = \epsilon \sum e^{-t} g_t$.
+  * Adaptive learning rate where $\epsilon = \epsilon_t$:
+    * AdaGrad - slow learning on gradient magnitude: $\epsilon_t = \frac{\epsilon}{\delta + \sqrt{\sum g_t^2}}$.
+    * RMSProp - slow learning on exponentially decayed gradient magnitude: $\epsilon_t = \frac{\epsilon}{\sqrt{\delta + \sum e^{-t} g_t^2}}$.
+    * Adam - complicated.
+* Newton's method: it's hard to apply due to technical reasons.
+
+## Convolution Networks
+
+Convolutional networks are ones where some layers use convolution instead of matrix multiply: $$ s(t) = \int{x(a)y(t-a)\,da} = (x \ast y)(t) $$
+
+* It captures locality, and is used for 1d, 2d, and 3d data where locality is a useful signal.
+* It captures location invariance as the same parameters are used.
+* Pooling: zzz
+
+## 
+
+## Placeholder to stop page drift
+
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+* blah blah blah
+
+</xmp>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+});
+</script>
+<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+</html>
