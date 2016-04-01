@@ -11,6 +11,34 @@
 
 Notes for "Deep Learning" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
 
+## Machine Learning
+
+* Machine learning is a branch of statistics that uses samples to approximate functions.
+  * We have a true underlying function that generates data, but we don't know what this function is.
+  * We can sample this function, and these samples form our training data.
+  * For example: in image captioning, the function we want converts an image into a textual description, the samples are images with descriptions.
+* The goal then, is to find techniques that will:
+  * Find a good candidate approximation that fits the training data well,
+  * This solution must also generalize to unseen data as well.
+  * For example: storing all training data and returning the nearest match can be a reasonable technique (it's called clustering).
+* Machine learning lets us solve problems we don't have a good theory for, because the machine learns the theory.
+* Possible applications of machine learning:
+  * Convert inputs into another form - learn "relevance", extract it and express it. eg: image classification, image captioning.
+  * Predict the missing or future values of a sequence - learn "causality", and predict it.
+  * Synthesise similar outputs - learn "structure", and generate it.
+
+## Generalization and Overfitting.
+
+<img src="overfitting.png" style="margin: 0; width: 20em">
+
+* Overfitting is when you have found good solutions to the training data, but it doesn't generalize.
+  * It is like a student who has memorized the answers to the exercise book so score well on mock tests, but score badly on novel tests.
+* The standard technique is to do cross validation:
+  * Set aside "test data" which is never trained upon.
+  * After training is complete, we run the solution on the test data.
+* One tension that exists is that powerful models simultaneously can solve more problems, but also have more leeway for overfitting.
+* Deep learning is one branch of machine learning techniques. It is a powerful model that has also been successful at generalizing.
+
 ## Feedforward Networks
 
 Feedforward networks approximates your function $y = f^\star(x)$ with a function family: $$ u = f(\theta)(x) $$
@@ -70,11 +98,16 @@ loop {
   * Sum of absolute errors: $J = \sum|y - u|$.
   * Sum of square errors: $J = \sum(y - u)^2$.
 * One good idea is that $u$ represents the parameters of the distribution of $y$.
-  * It's good because it gives a smooth interpretation of how close we are.
-  * The natural choice for cost is the cross entropy: $J = \sum -\log P(y; u)$.
-* Applying the idea for: $y ~ \text{Gaussian}(\text{center}=u)$:
-  * $P(y; u) = e^{-(y-u)^2}.$
-  * $J = \sum -\log e^{-(y-u)^2} = \sum(y-u)^2$
+  * Rationale: often natural processes are fuzzy, and any input might have a range of outputs.
+  * This approach also gives a smooth measure of how accurate we are.
+  * The maximum likelihood principle says that: $\theta\_\text{most likely} = \arg\max_\theta p(y; u)$
+  * Thus we want to minimize: $J = -p(y; u)$
+  * For $i$ samples: $J = -\prod_i p(y_i; u)$
+  * Taking log both sides: $J' = -\sum_i \log p(y_i; u)$.
+  * This is called cross-entropy.
+* Applying the idea for: $y \sim \text{Gaussian}(\text{center}=u)$:
+  * $p(y; u) = e^{-(y-u)^2}.$
+  * $J = -\sum \log e^{-(y-u)^2} = \sum(y-u)^2$
   * This motivates sum of squares as a good choice.
 
 ## Deep Feedforward Networks
@@ -108,21 +141,10 @@ The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
   * After multiplying with the next layer up, it is equivalent to: $f^n(x) = g'(NMx+b')$
   * It's useful because you can use use narrow $N$ and $M$, which has less parameters.
 
-## Overfitting.
-
-<img src="overfitting.png" style="margin: 0; width: 20em">
-
-* After optimizing $\theta$ many times, you are in danger of overfitting.
-* The function learns to score better and better on the training data, but it might score worse on unseen data.
-* In other words it is getting more generalization error.
-* The standard way to test for overfitting is to set aside "test data" which it never trains on.
-* The remaining data is "training data", after training, you use the test data to judge how good the model is.
-* For each training stage, you need to set aside test data for that stage.
-  * Hyperparameter tweaking (layer count, node count etc) is also a training stage.
-
 ## Regularization
 
-* Regularization is all the methods that attempt to reduce generalization error.
+* Regularization techniques are methods that attempt to reduce generalization error.
+  * It is not meant to improve the training error.
 * Prefer smaller $\theta$ values:
   * By adding some function of $\theta$ into $J$ we can encourage small parameters.
   * $L^2$: $J' = J + \sum |\theta|^2$
@@ -153,6 +175,7 @@ The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
 ## Optimizaton Methods
 
 * Minibatch - TODO
+* Why is it stochastic?? - TODO
 * There are many ways to do gradient descent (using: gradient $g$, learning rate $\epsilon$, gradient update $\Delta$)
   * Gradient descent - use gradient: $\Delta = \epsilon g$.
   * Momentum - use exponential decayed gradient: $\Delta = \epsilon \sum e^{-t} g_t$.
@@ -161,6 +184,10 @@ The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
     * RMSProp - slow learning on exponentially decayed gradient magnitude: $\epsilon_t = \frac{\epsilon}{\sqrt{\delta + \sum e^{-t} g_t^2}}$.
     * Adam - complicated.
 * Newton's method: it's hard to apply due to technical reasons.
+
+## Simplifying the Network
+
+* 
 
 ## Convolution Networks
 
