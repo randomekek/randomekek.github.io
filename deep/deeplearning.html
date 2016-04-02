@@ -14,16 +14,18 @@ Notes for "Deep Learning" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
 ## Machine Learning
 
 * Machine learning is a branch of statistics that uses samples to approximate functions.
-  * We have a true underlying function that generates data, but we don't know what this function is.
+  * We have a true underlying function or distribution that generates data, but we don't know what it is.
   * We can sample this function, and these samples form our training data.
-  * For example: in image captioning, the function we want converts an image into a textual description, the samples are images with descriptions.
+* Example image captioning:
+  * Function: $f^\star(\text{image}) \rightarrow \text{description}$.
+  * Samples: $\text{data} \in (\text{image}, \text{description})$.
+  * Note: since there is no correct description, it is not a point, but a distribution in text space: $\text{description} \sim \text{Text}$.
 * The goal then, is to find techniques that will:
   * Find a good candidate approximation that fits the training data well,
   * This solution must also generalize to unseen data as well.
-  * For example: storing all training data and returning the nearest match can be a reasonable technique (it's called clustering).
-* Machine learning lets us solve problems we don't have a good theory for, because the machine learns the theory.
+* Machine learning lets us solve problems we don't have a good theory for, or rather machine learning is a meta-theory.
 * Possible applications of machine learning:
-  * Convert inputs into another form - learn "relevance", extract it and express it. eg: image classification, image captioning.
+  * Convert inputs into another form - learn "information", extract it and express it. eg: image classification, image captioning.
   * Predict the missing or future values of a sequence - learn "causality", and predict it.
   * Synthesise similar outputs - learn "structure", and generate it.
 
@@ -31,28 +33,36 @@ Notes for "Deep Learning" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
 
 <img src="overfitting.png" style="margin: 0; width: 20em">
 
-* Overfitting is when you have found good solutions to the training data, but it doesn't generalize.
-  * It is like a student who has memorized the answers to the exercise book so score well on mock tests, but score badly on novel tests.
+* Overfitting is when you find a good model of the training data, but this model doesn't generalize.
+  * For example: a student who has memorized the answers to the training tests so scores well, but scores badly on the final test.
+* There are several tradeoffs:
+  * Model capacity: weak model cannot model the function but powerful model more prone to overfitting.
+  * Training iterations: training too little doesn't have enough time to fit the function, training too much gives more time to overfit.
+  * You need to find a middle ground between a weak model and an overfitted model.
 * The standard technique is to do cross validation:
   * Set aside "test data" which is never trained upon.
-  * After training is complete, we run the solution on the test data.
-* One tension that exists is that powerful models simultaneously can solve more problems, but also have more leeway for overfitting.
+  * After all training is complete, we run the model on the final test data.
+  * You cannot tweak the model after the final test (of course you can gather more data).
+  * If training the model happens in stages, you need to withhold test data for each stage.
 * Deep learning is one branch of machine learning techniques. It is a powerful model that has also been successful at generalizing.
 
 ## Feedforward Networks
 
-Feedforward networks approximates your function $y = f^\star(x)$ with a function family: $$ u = f(\theta)(x) $$
+Feedforward networks represents $y = f^\star(x)$ with a function family:
+$$ u = f(x; \theta) $$
 
 * $\theta$ are the model parameters. This could be thousands or millions of parameters $\theta_1 \ldots \theta_T$.
-* $f$ is a family of functions. $f(\theta)$ is a single function. $u$ is the output of the model.
+* $f$ is a family of functions. $f(x; \theta)$ is a single function of $x$. $u$ is the output of the model.
 * You can imagine if you chose a sufficiently general family of functions, chances are, one of them will resemble $f^\star$.
 * For example: let the parameters represent a matrix and a vector:
-  $f(\theta)(\vec{x}) = \begin{bmatrix}\theta_0 & \theta_1 \\\\ \theta_2 & \theta_3\end{bmatrix} \vec{x} + \begin{bmatrix}\theta_4 \\\\ \theta_5 \end{bmatrix}$
+  $f(\vec{x}; \theta)() = \begin{bmatrix}\theta_0 & \theta_1 \\\\ \theta_2 & \theta_3\end{bmatrix} \vec{x} + \begin{bmatrix}\theta_4 \\\\ \theta_5 \end{bmatrix}$
 
 ## Designing the Output Layer.
 
-The most common output layer is: $$f(x) = g(Mx+b)$$
+The most common output layer is:
+$$f(x; M, b) = g(Mx+b)$$
 
+* The parameters in $\theta$ are used as $M$ and $b$.
 * The linear part $Mx+b$ ensures that your output depends on all inputs.
 * The nonlinear part $g(x)$ allows you to fit the distributon of $y$.
 * For example for input of photos, the output distribution could be:
@@ -72,7 +82,7 @@ The most common output layer is: $$f(x) = g(Mx+b)$$
 
 Find $\theta$ by solving the following optimization problem for $J$ the cost function:
 
-$$ \min_{\theta \in \text{models}} J\big( y, f(\theta)(x) \big) $$
+$$ \min_{\theta \in \text{models}} J\big( y, f(x; \theta) \big) $$
 
 * Deep learning is successful because there is a good family of algorithms to calculate $\min$.
 * That algorithms are all variations of gradient descent:
@@ -110,37 +120,6 @@ loop {
   * $J = -\sum \log e^{-(y-u)^2} = \sum(y-u)^2$
   * This motivates sum of squares as a good choice.
 
-## Deep Feedforward Networks
-
-Deep feedforward networks instead use: $$ u = f(\theta)(x) = f^N(\theta^N)(\ldots(f^2(\theta^2)(f^1(\theta^1)(x)))) $$
-
-* This model has $N$ layers.
-  * $f^1 \ldots f^{N-1}$: hidden layers.
-  * $f^N$: output layer.
-* A deep model sounds like a bad idea because it needs more parameters.
-* In practise, it actually needs fewer parameters, and the models perform better (why?).
-* One possible reason is that each layer learns higher and higher level features of the data.
-
-## Designing Hidden Layers.
-
-The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
-
-* The hidden layers have the same structure as the output layer.
-* However the $g(x)$ which work well for the output layer don't work well for the hidden layers.
-* The simplest and most successful $g$ is the rectified linear unit (ReLU): $g(x) = \max(0, x)$.
-  * Compared to sigmoid, the gradients of ReLU does not approach zero when x is very big.
-* Other common non-linear functions include:
-* Modulated ReLU: $g(x) = \max(0, x) + \alpha\min(0, x)$.
-  * Where alpha is -1, very small, or a model parameter itself.
-  * The intuition is that this function has a slope for x &lt; 0.
-  * In practise there is no absolute winner between this and ReLU.
-* Maxout: $g(x)\_i = \max_{j \in G(i)} x_j$
-  * For comparison ReLU is $\mathbb{R}^n \rightarrow \mathbb{R}^n$, and maxout is $\mathbb{R}^n \rightarrow \mathbb{R}^\frac{n}{m}$.
-  * It is the max of each bundle of $m$ inputs, think of it as $m$ piecewise linear sections.
-* Linear: $g(x) = x$
-  * After multiplying with the next layer up, it is equivalent to: $f^n(x) = g'(NMx+b')$
-  * It's useful because you can use use narrow $N$ and $M$, which has less parameters.
-
 ## Regularization
 
 * Regularization techniques are methods that attempt to reduce generalization error.
@@ -172,6 +151,40 @@ The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
 * Adversarial:
   * Try to make the points near training points constant, by generating adversarial data near these points.
 
+## Deep Feedforward Networks
+
+Deep feedforward networks instead use: 
+$$ u = f(x, \theta) = f^N(\ldots f^1(x; \theta^1) \ldots; \theta^N) $$
+
+* This model has $N$ layers.
+  * $f^1 \ldots f^{N-1}$: hidden layers.
+  * $f^N$: output layer.
+* A deep model sounds like a bad idea because it needs more parameters.
+* In practise, it actually needs fewer parameters, and the models perform better (why?).
+* One possible reason is that each layer learns higher and higher level features of the data.
+
+## Designing Hidden Layers.
+
+The most common hidden layer is:
+$$f^n(x) = g(Mx+b)$$
+
+* The hidden layers have the same structure as the output layer.
+* However the $g(x)$ which work well for the output layer don't work well for the hidden layers.
+* The simplest and most successful $g$ is the rectified linear unit (ReLU): $g(x) = \max(0, x)$.
+  * Compared to sigmoid, the gradients of ReLU does not approach zero when x is very big.
+* Other common non-linear functions include:
+* Modulated ReLU: $g(x) = \max(0, x) + \alpha\min(0, x)$.
+  * Where alpha is -1, very small, or a model parameter itself.
+  * The intuition is that this function has a slope for x &lt; 0.
+  * In practise there is no absolute winner between this and ReLU.
+* Maxout: $g(x)\_i = \max_{j \in G(i)} x_j$
+  * $G$ partitions the range $[1 .. I]$ into subsets $[1 .. m], [m+1 .. 2m], [I-m .. I]$.
+  * For comparison ReLU is $\mathbb{R}^n \rightarrow \mathbb{R}^n$, and maxout is $\mathbb{R}^n \rightarrow \mathbb{R}^\frac{n}{m}$.
+  * It is the max of each bundle of $m$ inputs, think of it as $m$ piecewise linear sections.
+* Linear: $g(x) = x$
+  * After multiplying with the next layer up, it is equivalent to: $f^n(x) = g'(NMx+b')$
+  * It's useful because you can use use narrow $N$ and $M$, which has less parameters.
+
 ## Optimizaton Methods
 
 * Minibatch - TODO
@@ -187,46 +200,77 @@ The most common hidden layer is: $$f^n(x) = g(Mx+b)$$
 
 ## Simplifying the Network
 
-* 
+* At this point, we have enough basis to design and optimize deep networks.
+* However, these models are very general and large.
+  * If your network has $N$ layers each with $S$ inputs/outputs, the parameter space is $|\theta| = O(NS^2)$.
+  * This has two downsides: overfitting, and longer training time.
+* There are many methods to reduce parameter space:
+  * Find symmetries in the problem and chose layers that are invariant about the symmetry.
+  * Create layers with lower output dimensionality, the network must summarize information into a more compact representation.
 
 ## Convolution Networks
 
-Convolutional networks are ones where some layers use convolution instead of matrix multiply: $$ s(t) = \int{x(a)y(t-a)\,da} = (x \ast y)(t) $$
+A convolutional network simplifies some layers by using convolution instead of matrix multiply (denoted with a star):
+$$ f^n(x) = g(\theta^n \ast x) $$
 
-* It captures locality, and is used for 1d, 2d, and 3d data where locality is a useful signal.
-* It captures location invariance as the same parameters are used.
-* Pooling: zzz
+* It is used for data that is spatially distributed, and works for 1d, 2d and 3d data.
+  * 1d: $(\theta \ast x)\_i = \sum\_a \theta\_a x\_{i+a}$
+  * 2d: $(\theta \ast x)\_{ij} = \sum\_a \sum\_b \theta\_{ab} x\_{ab+ij}$
+* It's slightly from the mathematical definition, but has the same idea: the output at each point is a weighted sum of nearby points.
+* Benefits:
+  * Captures the notion of locality, if $\theta$ is zero, except in a window $w$ wide near $i=0$.
+  * Captures the notion of translation invariance, as the same $\theta$ are used for each point.
+  * Reduces the number of model parameters from $O(S^2)$, to $O(w^2)$.
+* If there are $n$ layers of convolution, one base value will be able to influence the outputs in a $wn$ radius.
+* Practical considerations:
+  * Pad the edges with 0, and how far to pad.
+  * Tiled convolutions (you rotate between different convolutions).
 
-## 
+## Pooling
+
+A common layer used in unison with convnets is max pooling:
+$$ f^n(x)\_i = \max\_{j \in G(i)} x_j $$
+
+* It is the same structure as maxout, and equivalent in 1d.
+* For higher dimensions $G$ partitions the input space into tiles.
+* This reduces the size of the input data, and can be considered as collapsing a local region of the inputs into a summary.
+* It is also invariant to small translations.
+
+## Recurrent Networks
+
+Recurrent networks use previous outputs as inputs:
+$$ s^{(t)} = f(s^{(t-1)}; \theta) $$
+
+* The state $s$ contains a summary of the past.
+* It is a simpler than a fully dynamic model: $s^{(t)} = d^{(t)}(x^{(t)}, ... x^{(1)}; \theta')$
+  * All the $\theta$'s are shared across time - the recurrent network is invariant across time.
+  * The recurrent network can learn for any length, while we need to train a different $g$ for each length of input.
+* There may be time varying inputs $x$: $s^{(t)} = f(s^{(t-1)}, x^{(t)}; \theta)$.
+* If there is output at each step, it can either be $s$, or $o(s)$ where $o$ is the output transformation.
+  * If output is $s$, the model is less powerful as there is no internal state.
+  * However, it is easier to train: we have expected output data.
+  * If output is $o(s)$, the model hides the state so it is harder to train.
+* There are many variants of RNN that explicitly model features to:
+  * Avoid vanishing gradients.
+  * Provide a prior on how the model learns.
+* Long short-term memory (LSTM) extends recurrent networks by explicitly modelling input, output and forgetting:
+  $s^{(t)} = o\_t(f\_t s^{(t-1)} + i\_t f(s^{(t-1)}, x^{(t)}; \theta))$
+  * $o_t$ is probability of output, $f_t$ is probability of forgetting, $i_t$ is probability of input, and are layers themselves.
+* Gated recurrent unit (GRU) are a simpler model:
+  $s^{(t)} = (1-z\_t)s^{(t-1)} + z\_tf(f_ts^{(t-1)}, x^{(t)}; \theta)$
+  * $z_t$ is probability of overwrite, $f_t$ is probability of forgetting.
+* When dropout is applied to $s$ it is like losing information, when applied to $f(s, x; \theta)$, it is like not storing information.
 
 ## Placeholder to stop page drift
 
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
-* blah blah blah
+<div style="height: 5000px"></div>
 
 </xmp>
 
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
-  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+  tex2jax: {inlineMath: [['$','$']]},
 });
 </script>
 <script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
