@@ -238,28 +238,69 @@ $$ f^n(x)\_i = \max\_{j \in G(i)} x_j $$
 
 ## Recurrent Networks
 
-Recurrent networks use previous outputs as inputs:
-$$ s^{(t)} = f(s^{(t-1)}; \theta) $$
+Recurrent networks use previous outputs as inputs, forming a recurrence:
+$$ s^{(t)} = f(s^{(t-1)}, x^{(t)}; \theta) $$
 
-* The state $s$ contains a summary of the past.
-* It is a simpler than a fully dynamic model: $s^{(t)} = d^{(t)}(x^{(t)}, ... x^{(1)}; \theta')$
-  * All the $\theta$'s are shared across time - the recurrent network is invariant across time.
-  * The recurrent network can learn for any length, while we need to train a different $g$ for each length of input.
-* There may be time varying inputs $x$: $s^{(t)} = f(s^{(t-1)}, x^{(t)}; \theta)$.
-* If there is output at each step, it can either be $s$, or $o(s)$ where $o$ is the output transformation.
-  * If output is $s$, the model is less powerful as there is no internal state.
-  * However, it is easier to train: we have expected output data.
-  * If output is $o(s)$, the model hides the state so it is harder to train.
-* There are many variants of RNN that explicitly model features to:
-  * Avoid vanishing gradients.
-  * Provide a prior on how the model learns.
-* Long short-term memory (LSTM) extends recurrent networks by explicitly modelling input, output and forgetting:
-  $s^{(t)} = o\_t(f\_t s^{(t-1)} + i\_t f(s^{(t-1)}, x^{(t)}; \theta))$
-  * $o_t$ is probability of output, $f_t$ is probability of forgetting, $i_t$ is probability of input, and are layers themselves.
+* The state $s$ contains a summary of the past, while $x$ is the inputs that arrive at each step.
+* It is a simpler model than a fully dynamic: $s^{(t)} = d^{(t)}(x^{(t)}, ... x^{(1)}; \theta')$
+  * All the $\theta$'s are shared across time - the recurrent network assumes time invariance.
+  * A RNN can learn for any input length, while a fully dynamic model needs a different $g$ for each input length.
+* Output: the model may return $y^{(t)}$ at each time step:
+  * No output during steps, only the final state matters. Eg: sentiment analysis.
+  * $y^{(t)} = s^{(t)}$, the model has no internal state and thus less powerful. But it is easier to train, since the training data $y$ is just $s$.
+  * $y^{(t)} = o(s^{(t)})$, use an output layer to transform (and hide) the internal state. But training is more indirect and harder.
+  * As always we prefer to think of $y$ as the parameters to a distribution.
+* The output chosen may be fed back to $f$ as extra inputs. If not fed in, the $y$ are conditionally independent of each other.
+  * When generating a sentence, we need conditional dependence between words, eg: A-A and B-B might be valid, but A-B might be invalid.
+* Completion:
+  * Finish when input ends. This works for $x^{(t)} \rightarrow y^{(t)}$.
+  * Extra output $y_\text{end}^{(t)}$ with the probability the output has completed.
+  * Extra output $y_\text{length}^{(t)}$ with the length of output remaining/total.
+* Optimization is done using the same gradient descent class of methods.
+  * Gradients are calculated by expanding the recurrence to a flat formula, called back-propagation through time (BPTT).
+* One difficult aspect of BPTT is the gradient $\Delta = \frac{\partial}{\partial s^t}$:
+  * $\Delta > 0$: the state explodes, and provide unstable gradient. The solution is to clip the gradient updates to a reasonable size during descent.
+  * $\Delta \approx 0$: this allows the state to persist for a long time, howevr the gradient descent method needs a gradient to work.
+  * $\Delta < 0$: the RNN is in a constant state of information loss.
+* There are variants of RNN that impose a simple prior to help preserve state $s^{(t)} \approx s^{(t-1)}$:
+  * $s^{(t)} = f_t s^{(t-1)} + f(...)$: we get a direct first derivative $\frac{\partial}{\partial x}$
+  * It lets us pass along a gradient from previous steps, even when $f$ itself has zero gradient.
+* Long short-term memory (LSTM) model input, output and forgetting:
+  $s^{(t)} = f\_t s^{(t-1)} + i\_t f(s^{(t-1)}, x^{(t)}; \theta)$
+  * The ouput is: $y^{(t)} = o\_t s^{(t)}$
+  * It uses probabilities (known as gates): $o_t$ output, $f_t$ forgetting, $i_t$ input.
+  * The gates are usually a sigmoid layer: $o_t = g(Mx+b) = \frac{1}{1+e^{Mx+b}}$.
+  * Long term information is preserved, because generating new data $g$ and using it $i$ are decoupled.
+  * Gradients are preserved more as there is a direct connection between the past and future.
 * Gated recurrent unit (GRU) are a simpler model:
-  $s^{(t)} = (1-z\_t)s^{(t-1)} + z\_tf(f_ts^{(t-1)}, x^{(t)}; \theta)$
-  * $z_t$ is probability of overwrite, $f_t$ is probability of forgetting.
-* When dropout is applied to $s$ it is like losing information, when applied to $f(s, x; \theta)$, it is like not storing information.
+  $s^{(t)} = (1-u\_t)s^{(t-1)} + u\_tf(r_t s^{(t-1)}, x^{(t)}; \theta)$
+  * The gates: $u_t$ update, $r_t$ reset.
+  * There is no clear winner.
+* For dropout, prefer $d(f(s, x; \theta))$ not storing information, over $d(s)$ losing information.
+* Memory Networks and attention mechanisms.
+
+## Useful Data Sets
+
+* There are broad categories of input data, the applications are limitless.
+* Images vector $[0-1]^{WH}$: image to label, image to description.
+* Audio vector for each time slice: speech to text.
+* Text embed each word into vector $[0-1]^N$: translation.
+* Knowledge Graphs: question answering.
+
+## Autoencoders
+
+An autoencoder has two functions, which encode $f$ and decode $g$ from input space to representation space. The objective is:
+$$ J = L(x, g(f(x))) $$
+
+* $L$ is the loss function, and is low when images are similar.
+* The idea is that the representation space learns important features.
+* To prevent overfitting we have some additional regularization tools:
+  * Sparse autoencoders minimize: $J' = J + S(f(x))$. This is a regularizer on representation space.
+  * Denoising autoencoders minimize: $J = L(x, g(f(n(x))))$, where $n$ adds noise. This forces the network to differentiate noise from signal.
+  * Derivative cost: $J' = J + \sum \frac{\partial f}{\partial x}$. This forces the encoder to be smooth: similar inputs get similar outputs.
+  * Alternatively use models like variational autoencoders which reduce overfitting.
+
+## Practical Advice
 
 ## Placeholder to stop page drift
 
