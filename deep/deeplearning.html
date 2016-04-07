@@ -307,6 +307,7 @@ $$ J = L(x, g(f(x))) $$
   * Denoising autoencoders minimize: $J = L(x, g(f(n(x))))$, where $n$ adds noise. This forces the network to differentiate noise from signal.
   * Contractive autoencoders minimize: $J' = J + \sum \frac{\partial f}{\partial x}$. This forces the encoder to be smooth: similar inputs get similar outputs.
   * Predictive autoencoders: $J = L(x, g(h)) + L'(h, f(x))$. Instead of optimizing $g$ and $h$ simultaneously, optimize them alternately.
+* Another solution is to train a discriminator network $D$ which outputs a scalar representing the probability the input is generated.
 
 ## Representation Learning
 
@@ -314,10 +315,11 @@ The idea is that instead of optimizing $ u = f(x; \theta) $, we optimize:
 $$ u = r_o(f(r_i(x); \theta)) $$
 
 * $r_i$ and $r_o$ are the input and output representations, but the idea can apply to CNN, RNN and other models.
+  * For example the encoder half of an autoencoder can be used to represent the input $r_i$.
 * The hope is that there are other representations that make the task easier.
 * These representations can be trained on large amounts of data and understand the base data.
-* For example: words is a very sparse input vector (all zeros, with one active). There are semantic representations of words that is easier to work with.
-* For all networks you need to understand what it is learning, and thus why the network works.
+* For example: words is a very sparse input vector (all zeros, with one active).
+  * There are semantic representations of words that is easier to work with.
 
 ## Practical Advice
 
