@@ -71,7 +71,7 @@ $$f(x; M, b) = g(Mx+b)$$
   * Softmax: $y \in \mathbb{R}^C$ and $\sum y = 1$. eg. probability its one of $C$ breeds of cats
 * To ensure $g(x)$ fits the distribution, you can use:
   * Linear: $g(x) = x$.
-  * Sigmoid: $g(x) = \frac{1}{1+e^x}$.
+  * Sigmoid: $g(x) = \frac{1}{1+e^{-x}}$.
 
     <img src="sigmoid.svg" style="margin: 0; width: 10em">
   * Softmax: $g(x)_c = \frac{e^{x_c}}{\sum_i e^{x_i}}$.
