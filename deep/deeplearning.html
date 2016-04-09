@@ -2,11 +2,16 @@
 <html>
 <title>Deep Learning for Beginners</title>
 
-<link href="http://strapdownjs.com/v/0.2/themes/simplex.min.css" rel="stylesheet">
-<link href="http://strapdownjs.com/v/0.2/strapdown.css" rel="stylesheet">
-<link href="http://strapdownjs.com/v/0.2/themes/bootstrap-responsive.min.css" rel="stylesheet">
+<link href="strapdown/strapdown.css" rel="stylesheet">
+<link href="strapdown/themes/bootstrap-responsive.min.css" rel="stylesheet">
+<link href="strapdown/themes/simplex.min.css" rel="stylesheet">
 
-<xmp theme="simplex" style="display:none;">
+<noscript>
+  <style>xmp { display: block !important; }</style>
+  Enable JS to Render.
+</noscript>
+
+<xmp theme="simplex">
 # Deep Learning for Beginners
 
 Notes for "Deep Learning" by Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
@@ -355,13 +360,14 @@ $$ u = r_o(f(r_i(x); \theta)) $$
   * $\theta\_\text{MAP} = \arg\max\_\theta Q(\theta | X) = \arg\max\_\theta\log Q(X | \theta) + \log Q(\theta)$.
   * This is like a regularizing term based on the prior of $Q(\theta)$.
 
-
 </xmp>
+
+
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   tex2jax: {inlineMath: [['$','$']]},
 });
 </script>
-<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script src="strapdown/strapdown.js"></script>
 <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 </html>
