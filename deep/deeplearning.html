@@ -102,7 +102,7 @@ loop {
 * You don't want the gradient to be near $0$ because you learn too slowly or near $\inf$ because it is not stable.
 * This is a greedy algorithm, and thus might converge but into a local minimum.
 
-## Chosing the Cost Function
+## Choosing the Cost Function
 
 * This cost function could be anything:
   * Sum of absolute errors: $J = \sum|y - u|$.
@@ -138,7 +138,7 @@ loop {
   * Injecting small noise into $x$, into layers, into parameters.
 * Multi-Task learning:
   * Share a layer between several different tasks.
-  * The layer is forced to chose useful features that is relevant to a general set of tasks.
+  * The layer is forced to choose useful features that is relevant to a general set of tasks.
 * Early stopping:
   * Keep a test data set, called the validation set, that is never trained on
   * Stop training when the cost on the validation set stops decreasing.
@@ -191,7 +191,7 @@ $$f^n(x) = g(Mx+b)$$
 ## Optimizaton Methods
 
 * The methods we use is based on stochastic gradient descent:
-  * Chose a subset of the training data (a minibatch), and calculate the gradient from that.
+  * Choose a subset of the training data (a minibatch), and calculate the gradient from that.
   * Benefit: does not depend on training set size, but on minibatch size.
 * There are many ways to do gradient descent (using: gradient $g$, learning rate $\epsilon$, gradient update $\Delta$)
   * Gradient descent - use gradient: $\Delta = \epsilon g$.
@@ -213,7 +213,7 @@ $$f^n(x) = g(Mx+b)$$
   * If your network has $N$ layers each with $S$ inputs/outputs, the parameter space is $|\theta| = O(NS^2)$.
   * This has two downsides: overfitting, and longer training time.
 * There are many methods to reduce parameter space:
-  * Find symmetries in the problem and chose layers that are invariant about the symmetry.
+  * Find symmetries in the problem and choose layers that are invariant about the symmetry.
   * Create layers with lower output dimensionality, the network must summarize information into a more compact representation.
 
 ## Convolution Networks
