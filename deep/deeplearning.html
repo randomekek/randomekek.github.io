@@ -191,7 +191,7 @@ $$f^n(x) = g(Mx+b)$$
   * It is the max of each bundle of $m$ inputs, think of it as $m$ piecewise linear sections.
 * Linear: $g(x) = x$
   * After multiplying with the next layer up, it is equivalent to: $f^n(x) = g'(NMx+b')$
-  * It's useful because you can use use narrow $N$ and $M$, which has less parameters.
+  * It's useful because you can use it to narrow $N$ and $M$, which has less parameters.
 
 ## Optimizaton Methods
 
@@ -354,10 +354,10 @@ $$ u = r_o(f(r_i(x); \theta)) $$
   * For $p$ is data and $q$ is model:
   * $\theta\_\text{ML} = \arg\max\_\theta Q(X; \theta)$.
   * Assuming iid and using log: $\theta\_\text{ML} = \arg\max\_\theta \sum\_x \log Q(x; \theta)$.
-  * Since each data point is equally likely: $\theta\_\text{ML} = \arg\max\_\theta H(P, Q; \theta)$.
-  * The only component of KL that varies is the entropy: $\theta\_\text{ML} = \arg\max\_\theta D\_\text{KL}(P||Q; \theta)$.
+  * Since each data point is equally likely: $\theta\_\text{ML} = \arg\min\_\theta H(P, Q; \theta)$.
+  * The only component of KL that varies is the entropy: $\theta\_\text{ML} = \arg\min\_\theta D\_\text{KL}(P||Q; \theta)$.
 * Maximum a posteriori:
-  * $\theta\_\text{MAP} = \arg\max\_\theta Q(\theta | X) = \arg\max\_\theta\log Q(X | \theta) + \log Q(\theta)$.
+  * $\theta\_\text{MAP} = \arg\max\_\theta Q(\theta | X) = \arg\min\_\theta\-log Q(X | \theta) - \log Q(\theta)$.
   * This is like a regularizing term based on the prior of $Q(\theta)$.
 
 </xmp>
