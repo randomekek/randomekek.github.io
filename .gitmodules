@@ -1,3 +1,6 @@
 [submodule "mountain"]
 	path = mountain
 	url = https://github.com/randomekek/mountain.git
+[submodule "serverless2"]
+	path = serverless2
+	url = https://github.com/randomekek/serverless2.git
