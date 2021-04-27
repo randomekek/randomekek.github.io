@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css' rel='stylesheet' />
+
+<span id="timeshow">30min</span><input type="range" min="5" max="120" value="30" id="time">
+<div id="pos">pos: 0, 0</div>
+<div id='map' style='width: 900px; height: 700px;'></div>
+<script>
+
+function ask() {
+  const key = localStorage.getItem('mapbox_key') || prompt('please add mapbox api_key');
+  if (key.length == 96) {
+    mapboxgl.accessToken = key;
+    localStorage.setItem('mapbox_key', key);
+  } else {
+    alert('not mapbox key');
+  }
+}
+ask();
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [151.1736, -33.8777],
+  zoom: 9,
+});
+const time = document.getElementById('time');
+function circle(x, y, r) {
+  const N = 25;
+  const theta = 2 * Math.PI / N;
+  const factor = Math.cos(x * Math.PI / 180);
+  return new Array(N).fill(0).map((_, i) => [x + r*Math.cos(i*theta)/factor, y + r*Math.sin(i*theta)]);
+}
+const walkingSpeed = 0.0833; // 5km/hr
+const earthR = 6371;
+function getData() {
+  const features = base.filter(x => time.value-x.time[0]-x.time[1] > 0).map(x => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      // TODO: why is it 55?
+      coordinates: [circle(x.stop[1], x.stop[0], walkingSpeed / earthR * 55 * (time.value-x.time[0]-x.time[1]))],
+    },
+    properties: {
+      description: x.depart + '<br/>' + x.via.split('/').join('<br/>') + '<br/>walk:' + Math.round(x.time[0]*10)/10 + 'min transport:' + x.time[1] + 'min',
+      center: JSON.stringify([x.stop[1], x.stop[0]]),
+    },
+  }));
+  return {
+    type: 'FeatureCollection',
+    features,
+  };
+}
+var base;
+time.addEventListener('change', x => {
+  map.getSource('mysource').setData(getData());
+  document.getElementById('timeshow').innerText = time.value + 'min';
+});
+
+async function load() {
+  base = await (await fetch('./points.json')).json();
+  map.on('load', async function () {
+    map.addSource('mysource', {
+      type: 'geojson',
+      data: getData(),
+    });
+    map.addLayer({
+      id: 'mylayer',
+      type: 'fill',
+      source: 'mysource',
+      paint: {
+        'fill-color': '#0080ff',
+        'fill-opacity': 0.3,
+      },
+    });
+
+    map.addSource('start', {
+      type: 'geojson',
+      data: {
+        type: 'Point',
+        coordinates: [151.205838, -33.866848],
+      }
+    });
+    map.addLayer({
+      id: 'startlayer',
+      type: 'circle',
+      source: 'start',
+    });
+
+    var popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
+    });
+
+    map.on('mouseenter', 'mylayer', function (e) {
+      popup
+        .setLngLat(JSON.parse(e.features[0].properties.center))
+        .setHTML(e.features[0].properties.description)
+        .addTo(map);
+    });
+
+    map.on('mouseleave', 'mylayer', function () {
+      popup.remove();
+    });
+
+    map.on('mousemove', e => {
+      document.getElementById('pos').innerText = 'pos: ' + [e.lngLat.wrap().lat, e.lngLat.wrap().lng];
+    });
+  })
+}
+load();
+</script>
